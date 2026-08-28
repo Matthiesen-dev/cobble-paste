@@ -1,7 +1,10 @@
 package dev.matthiesen.cobble_paste.common;
 
+import dev.matthiesen.cobble_paste.common.commands.CobblePasteCommands;
+import dev.matthiesen.cobble_paste.common.config.CobblePasteConfig;
 import dev.matthiesen.libs.faststats.Token;
 import dev.matthiesen.matthiesen_core.common.AbstractCommonMod;
+import dev.matthiesen.matthiesen_core.common.api.platform.loader.ModConfigType;
 import org.jetbrains.annotations.NotNull;
 
 public final class CobblePasteCommon extends AbstractCommonMod {
@@ -11,21 +14,24 @@ public final class CobblePasteCommon extends AbstractCommonMod {
     public static final CobblePasteCommon INSTANCE = new CobblePasteCommon();
 
     public CobblePasteCommon() {
-        super(MOD_ID, MOD_NAME);
+       super(MOD_ID, MOD_NAME);
     }
 
     @Override
     public @Token @NotNull String getMetricsToken() {
-        return METRICS_TOKEN;
+       return METRICS_TOKEN;
+    }
+
+    public static String modConfig(String path) {
+         return MOD_ID + "/" + path + ".toml";
     }
 
     public void initialize() {
-        super.initialize();
+       super.initialize();
 
-       if (getCommonUtils().isModLoaded("cobblemon")) {
-            createInfoLog("Cobblemon is loaded, Hello there Cobblemon!");
-       }
+       registerModConfig(MOD_ID, ModConfigType.SERVER, CobblePasteConfig.SERVER_SPEC, modConfig("server"));
+       getCommandsRegistryManager().registerCommand(CobblePasteCommands.CMD);
 
-        createInfoLog("Initialized");
+       createInfoLog("Initialized");
     }
 }
