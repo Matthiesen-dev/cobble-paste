@@ -13,11 +13,11 @@ public final class PermissionsConfig {
 
         commandPasteImportPermLevel = builder
                 .comment("The permission level required to use the /cobble-paste import command.")
-                .defineEnum("commandPasteImportPermLevel", PermissionLevel.CHEAT_COMMANDS_AND_COMMAND_BLOCKS);
+                .defineEnum("commandPasteImportPermLevel", PermissionLevel.ALL_COMMANDS);
 
         commandPasteExportPermLevel = builder
                 .comment("The permission level required to use the /cobble-paste export command.")
-                .defineEnum("commandPasteExportPermLevel", PermissionLevel.CHEAT_COMMANDS_AND_COMMAND_BLOCKS);
+                .defineEnum("commandPasteExportPermLevel", PermissionLevel.ALL_COMMANDS);
 
         builder.pop();
     }

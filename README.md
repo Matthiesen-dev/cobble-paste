@@ -58,11 +58,14 @@ Controls which permission levels can run each command.
 
 ```toml
 [permissions]
-commandPasteImportPermLevel = "CHEAT_COMMANDS_AND_COMMAND_BLOCKS"
-commandPasteExportPermLevel = "CHEAT_COMMANDS_AND_COMMAND_BLOCKS"
+commandPasteImportPermLevel = "ALL_COMMANDS"
+commandPasteExportPermLevel = "ALL_COMMANDS"
 ```
 
 These values are enum-based permission levels from the server permissions system.
+
+- `cobble_paste.command.cobble-paste.import`: permission to run the import command.
+- `cobble_paste.command.cobble-paste.export`: permission to run the export command.
 
 ## Docs
 
