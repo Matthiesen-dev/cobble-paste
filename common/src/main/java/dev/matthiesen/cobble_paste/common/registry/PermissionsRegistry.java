@@ -7,7 +7,7 @@ import dev.matthiesen.matthiesen_core.common.api.permissions.PermissionLevel;
 import dev.matthiesen.matthiesen_core.common.utility.AbstractPermission;
 import net.minecraft.commands.CommandSourceStack;
 
-public class PermissionsRegistry {
+public final class PermissionsRegistry {
     public static Permission COMMAND_PASTE_IMPORT;
     public static Permission COMMAND_PASTE_EXPORT;
 
