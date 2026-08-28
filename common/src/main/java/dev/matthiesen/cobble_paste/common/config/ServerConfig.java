@@ -12,7 +12,7 @@ public final class ServerConfig {
     public ServerConfig(ModConfigSpec.Builder builder) {
         builder
                 .comment("Author name to display on pokepast.es when exporting.")
-                .define("general.pasteAuthor", "");
+                .define("general.pasteAuthor", "CobblePaste");
 
         builder
                 .comment("Showdown item name to registry id mapping. Use UNMAPPED:prefix to skip unsupported items.")
