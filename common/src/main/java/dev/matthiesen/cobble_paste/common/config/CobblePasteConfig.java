@@ -10,10 +10,17 @@ public final class CobblePasteConfig {
     public static final ServerConfig SERVER_CONFIG;
     public static final ModConfigSpec SERVER_SPEC;
 
+    public static final PermissionsConfig PERMISSIONS_CONFIG;
+    public static final ModConfigSpec PERMISSIONS_SPEC;
+
     static {
         Pair<ServerConfig, ModConfigSpec> specPair = new ModConfigSpec.Builder().configure(ServerConfig::new);
         SERVER_CONFIG = specPair.getLeft();
         SERVER_SPEC = specPair.getRight();
+
+        Pair<PermissionsConfig, ModConfigSpec> permissionsSpecPair = new ModConfigSpec.Builder().configure(PermissionsConfig::new);
+        PERMISSIONS_CONFIG = permissionsSpecPair.getLeft();
+        PERMISSIONS_SPEC = permissionsSpecPair.getRight();
     }
 
     private CobblePasteConfig() {

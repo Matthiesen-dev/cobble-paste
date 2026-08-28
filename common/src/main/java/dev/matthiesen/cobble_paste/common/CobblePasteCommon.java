@@ -2,6 +2,7 @@ package dev.matthiesen.cobble_paste.common;
 
 import dev.matthiesen.cobble_paste.common.commands.CobblePasteCommands;
 import dev.matthiesen.cobble_paste.common.config.CobblePasteConfig;
+import dev.matthiesen.cobble_paste.common.registry.PermissionsRegistry;
 import dev.matthiesen.libs.faststats.Token;
 import dev.matthiesen.matthiesen_core.common.AbstractCommonMod;
 import dev.matthiesen.matthiesen_core.common.api.platform.loader.ModConfigType;
@@ -29,7 +30,10 @@ public final class CobblePasteCommon extends AbstractCommonMod {
     public void initialize() {
        super.initialize();
 
+       registerModConfig(MOD_ID, ModConfigType.STARTUP, CobblePasteConfig.PERMISSIONS_SPEC, modConfig("permissions"));
        registerModConfig(MOD_ID, ModConfigType.SERVER, CobblePasteConfig.SERVER_SPEC, modConfig("server"));
+
+       PermissionsRegistry.init();
        getCommandsRegistryManager().registerCommand(CobblePasteCommands.CMD);
 
        createInfoLog("Initialized");

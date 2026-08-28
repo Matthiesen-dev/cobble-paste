@@ -13,6 +13,7 @@ import dev.matthiesen.cobble_paste.common.converter.CobblemonToShowdownConverter
 import dev.matthiesen.cobble_paste.common.converter.ShowdownToCobblemonConverter;
 import dev.matthiesen.cobble_paste.common.formats.ShowdownTeam;
 import dev.matthiesen.cobble_paste.common.parser.PokePasteParser;
+import dev.matthiesen.cobble_paste.common.registry.PermissionsRegistry;
 import dev.matthiesen.cobble_paste.common.serializer.PokePasteSerializer;
 import dev.matthiesen.matthiesen_core.common.api.command.CoreCommand;
 import net.minecraft.ChatFormatting;
@@ -34,22 +35,20 @@ public final class CobblePasteCommands implements CoreCommand {
 
     @Override
     public void register(CommandDispatcher<CommandSourceStack> commandDispatcher, CommandBuildContext commandBuildContext, Commands.CommandSelection commandSelection) {
-        LiteralArgumentBuilder<CommandSourceStack> root = Commands.literal("cobble-paste")
-                .then(Commands.literal("import")
-                        .then(Commands.argument("url", StringArgumentType.string())
-                                .executes(CobblePasteCommands::importPaste)))
-                .then(Commands.literal("export")
-                        .executes(CobblePasteCommands::exportPaste));
+        var importSubCommand = Commands.literal("import")
+                .requires(source -> PermissionsRegistry.checkPermission(source, PermissionsRegistry.COMMAND_PASTE_IMPORT))
+                .then(Commands.argument("url", StringArgumentType.string())
+                        .executes(CobblePasteCommands::importPaste));
 
-        LiteralArgumentBuilder<CommandSourceStack> alias = Commands.literal("cobblepaste")
-                .then(Commands.literal("import")
-                        .then(Commands.argument("url", StringArgumentType.string())
-                                .executes(CobblePasteCommands::importPaste)))
-                .then(Commands.literal("export")
-                        .executes(CobblePasteCommands::exportPaste));
+        var exportSubCommand = Commands.literal("export")
+                .requires(source -> PermissionsRegistry.checkPermission(source, PermissionsRegistry.COMMAND_PASTE_EXPORT))
+                .executes(CobblePasteCommands::exportPaste);
 
-        commandDispatcher.register(root);
-        commandDispatcher.register(alias);
+        LiteralArgumentBuilder<CommandSourceStack> command = Commands.literal("cobble-paste")
+                .then(importSubCommand)
+                .then(exportSubCommand);
+
+        commandDispatcher.register(command);
     }
 
     private static int importPaste(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
