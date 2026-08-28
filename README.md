@@ -17,6 +17,53 @@ Note: Importing and exporting Pokémon from Pokepast.es is only available for pl
 - [Fabric API](https://modrinth.com/mod/fabric-api) (Fabric only)
 - [Forge Config API Port](https://modrinth.com/mod/forge-config-api-port) (Fabric only)
 
+## Quick Start
+
+Cobble Paste is a server-side mod for importing and exporting Cobblemon teams to Pokepast.es.
+
+### Commands
+
+Use these commands from the server console or in-game as a player with the required permissions:
+
+- `/cobble-paste import <url>`: fetches a Pokepast.es URL and imports the team into the caller's party.
+- `/cobble-paste export`: exports the current party to Pokepast.es and returns a shareable link.
+
+### Configuration
+
+Cobble Paste stores its config files in your game directory under `config/cobble_paste/`.
+
+#### `server.toml`
+
+Controls the exported paste author and item name mappings used during import/export.
+
+```toml
+[general]
+pasteAuthor = "CobblePaste"
+
+[item_mappings]
+entries = [
+  "Leftovers=cobblemon:leftovers",
+  "Choice Band=cobblemon:choice_band",
+  "Booster Energy=UNMAPPED:booster_energy"
+]
+```
+
+- `general.pasteAuthor`: the author name shown on Pokepast.es when exporting.
+- `item_mappings.entries`: a list of `Showdown Item Name=registry_id` pairs.
+- Use `UNMAPPED:<name>` to skip unsupported item mappings instead of hard-failing on import/export.
+
+#### `permissions.toml`
+
+Controls which permission levels can run each command.
+
+```toml
+[permissions]
+commandPasteImportPermLevel = "CHEAT_COMMANDS_AND_COMMAND_BLOCKS"
+commandPasteExportPermLevel = "CHEAT_COMMANDS_AND_COMMAND_BLOCKS"
+```
+
+These values are enum-based permission levels from the server permissions system.
+
 ## Docs
 
 Documentation for this mod can be found at [mods.matthiesen.dev](https://mods.matthiesen.dev/cobble-paste/)
