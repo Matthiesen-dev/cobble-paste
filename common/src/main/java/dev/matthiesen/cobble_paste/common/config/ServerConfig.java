@@ -10,11 +10,11 @@ public final class ServerConfig {
     public ModConfigSpec.ConfigValue<List<? extends String>> ITEM_MAPPINGS;
 
     public ServerConfig(ModConfigSpec.Builder builder) {
-        builder
+        PASTE_AUTHOR = builder
                 .comment("Author name to display on pokepast.es when exporting.")
                 .define("general.pasteAuthor", "CobblePaste");
 
-        builder
+        ITEM_MAPPINGS = builder
                 .comment("Showdown item name to registry id mapping. Use UNMAPPED:prefix to skip unsupported items.")
                 .defineList("item_mappings.entries", defaultItemMappings(), () -> "", value -> value instanceof String);
     }

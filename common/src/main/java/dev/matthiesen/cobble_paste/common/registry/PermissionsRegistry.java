@@ -10,10 +10,12 @@ import net.minecraft.commands.CommandSourceStack;
 public final class PermissionsRegistry {
     public static Permission COMMAND_PASTE_IMPORT;
     public static Permission COMMAND_PASTE_EXPORT;
+    public static Permission COMMAND_PASTE_PREVIEW;
 
     static {
         COMMAND_PASTE_IMPORT = PermissionsRegistry.register("command.cobble-paste.import", CobblePasteConfig.PERMISSIONS_CONFIG.commandPasteImportPermLevel.get().getLevel());
         COMMAND_PASTE_EXPORT = PermissionsRegistry.register("command.cobble-paste.export", CobblePasteConfig.PERMISSIONS_CONFIG.commandPasteExportPermLevel.get().getLevel());
+        COMMAND_PASTE_PREVIEW = PermissionsRegistry.register("command.cobble-paste.preview", CobblePasteConfig.PERMISSIONS_CONFIG.commandPastePreviewPermLevel.get().getLevel());
     }
 
     public static boolean checkPermission(CommandSourceStack source, Permission permission) {

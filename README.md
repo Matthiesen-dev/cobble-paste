@@ -17,6 +17,10 @@ Note: Importing and exporting Pokémon from Pokepast.es is only available for pl
 - [Fabric API](https://modrinth.com/mod/fabric-api) (Fabric only)
 - [Forge Config API Port](https://modrinth.com/mod/forge-config-api-port) (Fabric only)
 
+### Optional Dependencies
+
+- [GooeyLibs](https://modrinth.com/mod/gooeylibs)
+
 ## Quick Start
 
 Cobble Paste is a server-side mod for importing and exporting Cobblemon teams to Pokepast.es.
@@ -26,6 +30,7 @@ Cobble Paste is a server-side mod for importing and exporting Cobblemon teams to
 Use these commands from the server console or in-game as a player with the required permissions:
 
 - `/cobble-paste import <url>`: fetches a Pokepast.es URL and imports the team into the caller's party.
+- `/cobble-paste preview <url>`: opens a read-only inventory preview of the team when GooeyLibs is installed on the server.
 - `/cobble-paste export`: exports the current party to Pokepast.es and returns a shareable link.
 
 ### Configuration
@@ -60,12 +65,14 @@ Controls which permission levels can run each command.
 [permissions]
 commandPasteImportPermLevel = "ALL_COMMANDS"
 commandPasteExportPermLevel = "ALL_COMMANDS"
+commandPastePreviewPermLevel = "ALL_COMMANDS"
 ```
 
 These values are enum-based permission levels from the server permissions system.
 
 - `cobble_paste.command.cobble-paste.import`: permission to run the import command.
 - `cobble_paste.command.cobble-paste.export`: permission to run the export command.
+- `cobble_paste.command.cobble-paste.preview`: permission to run the preview command.
 
 ## Docs
 

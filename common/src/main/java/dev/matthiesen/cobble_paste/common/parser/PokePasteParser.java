@@ -18,9 +18,10 @@ public final class PokePasteParser {
     private PokePasteParser() {
     }
 
-    public static ShowdownTeam parse(String rawPasteText) {
+    public static ShowdownTeam parse(String rawPasteText, String pokePasteId) {
+        String resolvedPasteId = pokePasteId == null ? "" : pokePasteId;
         if (rawPasteText == null || rawPasteText.isBlank()) {
-            return new ShowdownTeam("", List.of());
+            return new ShowdownTeam(resolvedPasteId, List.of());
         }
 
         List<String> blocks = splitBlocks(rawPasteText);
@@ -31,12 +32,13 @@ public final class PokePasteParser {
                 entries.add(entry);
             }
         }
-        return new ShowdownTeam("", entries);
+        return new ShowdownTeam(resolvedPasteId, entries);
     }
 
     private static ShowdownEntry parseBlock(String block) {
         String[] lines = block.replace("\r", "").split("\\n");
         List<String> bodyLines = new ArrayList<>();
+        Map<String, String> fields = new LinkedHashMap<>();
         String header = "";
         for (String line : lines) {
             String trimmed = line.trim();
@@ -49,10 +51,19 @@ public final class PokePasteParser {
                 header = trimmed;
             } else if (trimmed.startsWith("- ")) {
                 bodyLines.add(trimmed);
+            } else if (trimmed.endsWith(" Nature")) {
+                fields.put("nature", trimmed.substring(0, trimmed.length() - " Nature".length()).trim());
+            } else {
+                int separator = trimmed.indexOf(':');
+                if (separator > 0) {
+                    fields.put(
+                            trimmed.substring(0, separator).trim().toLowerCase(Locale.ROOT),
+                            trimmed.substring(separator + 1).trim()
+                    );
+                }
             }
         }
 
-        Map<String, String> fields = new LinkedHashMap<>();
         for (String line : bodyLines) {
             if (!line.startsWith("||")) {
                 continue;
@@ -74,10 +85,15 @@ public final class PokePasteParser {
         }
 
         String nickname = firstNonBlank(fields.get("name"), extractNicknameFromHeader(header), species);
-        String genderText = fields.get("gender");
+        String genderText = firstNonBlank(fields.get("gender"), extractGenderFromHeader(header));
         ShowdownGender gender = getGender(genderText);
 
-        String item = firstNonBlank(fields.get("item"), fields.get("held item"), fields.get("helditem"));
+        String item = firstNonBlank(
+                fields.get("item"),
+                fields.get("held item"),
+                fields.get("helditem"),
+                extractItemFromHeader(header)
+        );
         String ability = firstNonBlank(fields.get("ability"));
         String nature = firstNonBlank(fields.get("nature"));
         Optional<Integer> level = parseOptionalInt(fields.get("level"));
@@ -136,15 +152,20 @@ public final class PokePasteParser {
             return stats;
         }
 
-        String[] parts = raw.split("\\s+");
-        for (int i = 0; i + 1 < parts.length; i += 2) {
-            String statName = parts[i].trim();
-            Integer value = parseIntMaybe(parts[i + 1]);
-            if (value == null) {
-                continue;
+        for (String part : raw.split("/")) {
+            String[] tokens = part.trim().split("\\s+");
+            Integer value = null;
+            StringBuilder statName = new StringBuilder();
+            for (String token : tokens) {
+                Integer parsed = parseIntMaybe(token);
+                if (parsed != null) {
+                    value = parsed;
+                } else {
+                    statName.append(token);
+                }
             }
-            Stats stat = parseStatName(statName);
-            if (stat != null) {
+            Stats stat = parseStatName(statName.toString());
+            if (stat != null && value != null) {
                 stats.put(stat, value);
             }
         }
@@ -158,7 +179,7 @@ public final class PokePasteParser {
             case "atk", "attack" -> Stats.ATTACK;
             case "def", "defence", "defense" -> Stats.DEFENCE;
             case "spa", "specialattack", "special_attack" -> Stats.SPECIAL_ATTACK;
-            case "spd", "specialdefence", "special_defence" -> Stats.SPECIAL_DEFENCE;
+            case "spd", "specialdefence", "special_defence", "specialdefense", "special_defense" -> Stats.SPECIAL_DEFENCE;
             case "spe", "speed" -> Stats.SPEED;
             default -> null;
         };
@@ -208,15 +229,10 @@ public final class PokePasteParser {
             return "";
         }
 
-        String cleaned = header;
-        if (cleaned.contains(" @ ")) {
-            cleaned = cleaned.substring(0, cleaned.indexOf(" @ "));
-        }
-        if (cleaned.contains(" (")) {
-            cleaned = cleaned.substring(0, cleaned.indexOf(" ("));
-        }
-        if (cleaned.contains(" [")) {
-            cleaned = cleaned.substring(0, cleaned.indexOf(" ["));
+        String cleaned = stripItemAndGender(header);
+        int speciesStart = cleaned.indexOf(" (");
+        if (speciesStart >= 0 && cleaned.endsWith(")")) {
+            return cleaned.substring(speciesStart + 2, cleaned.length() - 1).trim();
         }
         return cleaned.trim();
     }
@@ -226,11 +242,8 @@ public final class PokePasteParser {
             return "";
         }
 
-        String cleaned = header;
-        if (cleaned.contains(" @ ")) {
-            cleaned = cleaned.substring(0, cleaned.indexOf(" @ "));
-        }
-        if (cleaned.contains(" (")) {
+        String cleaned = stripItemAndGender(header);
+        if (cleaned.endsWith(")") && cleaned.contains(" (")) {
             String nickname = cleaned.substring(0, cleaned.indexOf(" ("));
             if (!nickname.isBlank()) {
                 return nickname.trim();
@@ -239,13 +252,45 @@ public final class PokePasteParser {
         return "";
     }
 
+    private static String extractGenderFromHeader(String header) {
+        String cleaned = stripItem(header);
+        if (cleaned.endsWith(" (M)") || cleaned.endsWith(" (F)") || cleaned.endsWith(" (N)")) {
+            return cleaned.substring(cleaned.length() - 2, cleaned.length() - 1);
+        }
+        return "";
+    }
+
+    private static String extractItemFromHeader(String header) {
+        if (header == null) {
+            return "";
+        }
+        int separator = header.indexOf(" @ ");
+        return separator < 0 ? "" : header.substring(separator + 3).trim();
+    }
+
+    private static String stripItemAndGender(String header) {
+        String cleaned = stripItem(header);
+        if (cleaned.endsWith(" (M)") || cleaned.endsWith(" (F)") || cleaned.endsWith(" (N)")) {
+            cleaned = cleaned.substring(0, cleaned.length() - 4);
+        }
+        return cleaned;
+    }
+
+    private static String stripItem(String header) {
+        String cleaned = header;
+        int itemSeparator = cleaned.indexOf(" @ ");
+        if (itemSeparator >= 0) {
+            cleaned = cleaned.substring(0, itemSeparator);
+        }
+        return cleaned.trim();
+    }
+
     private static List<String> splitBlocks(String rawPasteText) {
         List<String> blocks = new ArrayList<>();
         StringBuilder current = new StringBuilder();
-        boolean isBlank = !current.toString().trim().isBlank();
         for (String line : rawPasteText.replace("\r", "").split("\\n")) {
             if (line.trim().isEmpty()) {
-                if (!current.isEmpty() && isBlank) {
+                if (!current.isEmpty()) {
                     blocks.add(current.toString().trim());
                     current.setLength(0);
                 }
@@ -253,7 +298,7 @@ public final class PokePasteParser {
             }
             current.append(line).append('\n');
         }
-        if (!current.isEmpty() && isBlank) {
+        if (!current.isEmpty()) {
             blocks.add(current.toString().trim());
         }
         return blocks;

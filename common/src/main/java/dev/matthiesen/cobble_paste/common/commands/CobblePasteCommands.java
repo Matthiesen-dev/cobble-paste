@@ -5,16 +5,16 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.cobblemon.mod.common.pokemon.Pokemon;
-import com.cobblemon.mod.common.util.PlayerExtensionsKt;
 import dev.matthiesen.cobble_paste.common.api.PokePasteApiClient;
 import dev.matthiesen.cobble_paste.common.config.CobblePasteConfig;
 import dev.matthiesen.cobble_paste.common.converter.CobblemonToShowdownConverter;
-import dev.matthiesen.cobble_paste.common.converter.ShowdownToCobblemonConverter;
 import dev.matthiesen.cobble_paste.common.formats.ShowdownTeam;
 import dev.matthiesen.cobble_paste.common.parser.PokePasteParser;
 import dev.matthiesen.cobble_paste.common.registry.PermissionsRegistry;
 import dev.matthiesen.cobble_paste.common.serializer.PokePasteSerializer;
+import dev.matthiesen.cobble_paste.common.services.PreviewService;
+import dev.matthiesen.cobble_paste.common.services.TeamImportService;
+import com.cobblemon.mod.common.util.PlayerExtensionsKt;
 import dev.matthiesen.matthiesen_core.common.api.command.CoreCommand;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandBuildContext;
@@ -37,16 +37,22 @@ public final class CobblePasteCommands implements CoreCommand {
     public void register(CommandDispatcher<CommandSourceStack> commandDispatcher, CommandBuildContext commandBuildContext, Commands.CommandSelection commandSelection) {
         var importSubCommand = Commands.literal("import")
                 .requires(source -> PermissionsRegistry.checkPermission(source, PermissionsRegistry.COMMAND_PASTE_IMPORT))
-                .then(Commands.argument("url", StringArgumentType.string())
+                .then(Commands.argument("url", StringArgumentType.greedyString())
                         .executes(CobblePasteCommands::importPaste));
 
         var exportSubCommand = Commands.literal("export")
                 .requires(source -> PermissionsRegistry.checkPermission(source, PermissionsRegistry.COMMAND_PASTE_EXPORT))
                 .executes(CobblePasteCommands::exportPaste);
 
+        var previewSubCommand = Commands.literal("preview")
+                .requires(source -> PermissionsRegistry.checkPermission(source, PermissionsRegistry.COMMAND_PASTE_PREVIEW))
+                .then(Commands.argument("url", StringArgumentType.greedyString())
+                        .executes(CobblePasteCommands::previewPaste));
+
         LiteralArgumentBuilder<CommandSourceStack> command = Commands.literal("cobble-paste")
                 .then(importSubCommand)
-                .then(exportSubCommand);
+                .then(exportSubCommand)
+                .then(previewSubCommand);
 
         commandDispatcher.register(command);
     }
@@ -54,24 +60,55 @@ public final class CobblePasteCommands implements CoreCommand {
     private static int importPaste(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         ServerPlayer player = context.getSource().getPlayerOrException();
         String rawUrl = StringArgumentType.getString(context, "url");
+        String pasteId = PokePasteApiClient.extractPasteId(rawUrl);
         context.getSource().sendSystemMessage(Component.literal("Fetching Pokepaste...").withStyle(ChatFormatting.YELLOW));
 
         PokePasteApiClient.fetchRawPaste(rawUrl)
                 .thenAccept(raw -> {
                     try {
-                        ShowdownTeam team = PokePasteParser.parse(raw);
+                        ShowdownTeam team = PokePasteParser.parse(raw, pasteId);
                         if (team.team().isEmpty()) {
                             player.sendSystemMessage(Component.literal("No valid Pokémon were found in that paste.").withStyle(ChatFormatting.RED));
                             return;
                         }
 
-                        player.server.execute(() -> importTeamIntoParty(player, team));
+                        player.server.execute(() -> TeamImportService.importIntoParty(player, team));
                     } catch (Exception ex) {
                         player.sendSystemMessage(Component.literal("Failed to parse Pokepaste: " + ex.getMessage()).withStyle(ChatFormatting.RED));
                     }
                 })
                 .exceptionally(throwable -> {
                     player.sendSystemMessage(Component.literal("Could not fetch Pokepaste: " + throwable.getMessage()).withStyle(ChatFormatting.RED));
+                    return null;
+                });
+        return 1;
+    }
+
+    @SuppressWarnings("SameReturnValue")
+    private static int previewPaste(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        ServerPlayer player = context.getSource().getPlayerOrException();
+        String rawUrl = StringArgumentType.getString(context, "url");
+        String pasteId = PokePasteApiClient.extractPasteId(rawUrl);
+        if (!PreviewService.isAvailable()) {
+            PreviewService.open(player, new ShowdownTeam(pasteId, List.of()));
+            return 1;
+        }
+
+        context.getSource().sendSystemMessage(Component.literal("Fetching Pokepaste preview...").withStyle(ChatFormatting.YELLOW));
+
+        PokePasteApiClient.fetchRawPaste(rawUrl)
+                .thenApply(raw -> PokePasteParser.parse(raw, pasteId))
+                .thenAccept(team -> player.server.execute(() -> {
+                    if (team.team().isEmpty()) {
+                        player.sendSystemMessage(Component.literal("No valid Pokémon were found in that paste.").withStyle(ChatFormatting.RED));
+                        return;
+                    }
+                    PreviewService.open(player, team);
+                }))
+                .exceptionally(throwable -> {
+                    player.server.execute(() -> player.sendSystemMessage(
+                            Component.literal("Could not preview Pokepaste: " + throwable.getMessage()).withStyle(ChatFormatting.RED)
+                    ));
                     return null;
                 });
         return 1;
@@ -114,41 +151,5 @@ public final class CobblePasteCommands implements CoreCommand {
                 });
 
         return 1;
-    }
-
-    private static void importTeamIntoParty(ServerPlayer player, ShowdownTeam team) {
-        var party = PlayerExtensionsKt.party(player);
-        var pc = PlayerExtensionsKt.pc(player);
-
-        List<Pokemon> movedToPc = new ArrayList<>();
-        for (int i = 0; i < party.size(); i++) {
-            Pokemon current = party.get(i);
-            if (current != null) {
-                movedToPc.add(current);
-            }
-        }
-        for (Pokemon pokemon : movedToPc) {
-            party.remove(pokemon);
-            pc.add(pokemon);
-        }
-
-        int inserted = 0;
-        for (var entry : team.team()) {
-            if (inserted >= 6) {
-                break;
-            }
-            Pokemon converted = ShowdownToCobblemonConverter.convert(entry);
-            if (converted == null) {
-                continue;
-            }
-            if (party.size() >= 6) {
-                pc.add(converted);
-                continue;
-            }
-            party.add(converted);
-            inserted++;
-        }
-
-        player.sendSystemMessage(Component.literal("Imported " + inserted + " Pokémon into your party.").withStyle(ChatFormatting.GREEN));
     }
 }
