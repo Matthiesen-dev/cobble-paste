@@ -87,7 +87,7 @@ In your Cobblemon NPC Datapack json, you can use the following format to define 
   "party": {
     "type": "cobble_paste:poke_paste",
     "isStatic": true,
-    "pokePasteId": "your-paste-id"
+    "pokePasteId": "your-paste-id-or-url"
   }
 }
 ```
