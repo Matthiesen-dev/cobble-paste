@@ -37,18 +37,14 @@ public final class PokepastesPreviewGui {
         PlaceholderButton placeholder = new PlaceholderButton();
 
         ChestTemplate template = ChestTemplate.builder(3)
-                .row(0, frameButton())
-                .set(1, 0, frameButton())
                 .set(1, 1, placeholder)
                 .set(1, 2, placeholder)
                 .set(1, 3, placeholder)
-                .set(1, 4, frameButton())
                 .set(1, 5, placeholder)
                 .set(1, 6, placeholder)
                 .set(1, 7, placeholder)
-                .set(1, 8, frameButton())
-                .row(2, frameButton())
                 .set(2, 4, importButton())
+                .fill(frameButton())
                 .build();
 
         List<Button> buttons = new ArrayList<>();
