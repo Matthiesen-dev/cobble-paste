@@ -74,6 +74,24 @@ These values are enum-based permission levels from the server permissions system
 - `cobble_paste.command.cobble-paste.export`: permission to run the export command.
 - `cobble_paste.command.cobble-paste.preview`: permission to run the preview command.
 
+### Cobblemon NPC Party Provider
+
+Cobble Paste also adds a new NPC Party Provider for Cobblemon, allowing NPCs to have their parties defined by Pokepast.es URLs.
+
+> For more information about NPC Presets and Party providers, see the [Cobblemon NPC API documentation](https://gitlab.com/cable-mc/cobblemon/-/blob/1.7.3/common/src/main/kotlin/com/cobblemon/mod/common/api/npc/README.md?ref_type=tags#party)
+
+In your Cobblemon NPC Datapack json, you can use the following format to define an NPC's party:
+
+```json
+{
+  "party": {
+    "type": "cobble_paste:poke_paste",
+    "isStatic": true,
+    "pokePasteId": "your-paste-id"
+  }
+}
+```
+
 ## Docs
 
 Documentation for this mod can be found at [mods.matthiesen.dev](https://mods.matthiesen.dev/cobble-paste/)
