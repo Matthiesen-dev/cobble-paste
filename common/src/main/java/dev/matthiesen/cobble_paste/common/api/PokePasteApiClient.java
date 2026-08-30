@@ -85,4 +85,18 @@ public final class PokePasteApiClient {
 
         return "https://pokepast.es/" + trimmed;
     }
+
+    public static String extractPasteId(String urlOrId) {
+        if (urlOrId == null || urlOrId.isBlank()) {
+            return "";
+        }
+
+        String trimmed = urlOrId.trim();
+        if (trimmed.matches("(?i)[0-9a-f]{16}")) {
+            return trimmed;
+        }
+
+        Matcher matcher = POKEPASTE_ID.matcher(trimmed);
+        return matcher.find() ? matcher.group(1) : "";
+    }
 }
