@@ -1,7 +1,10 @@
 package dev.matthiesen.cobble_paste.common.services.gooey;
 
 import ca.landonjw.gooeylibs2.api.UIManager;
+import ca.landonjw.gooeylibs2.api.button.Button;
 import ca.landonjw.gooeylibs2.api.button.GooeyButton;
+import ca.landonjw.gooeylibs2.api.button.PlaceholderButton;
+import ca.landonjw.gooeylibs2.api.helpers.PaginationHelper;
 import ca.landonjw.gooeylibs2.api.page.GooeyPage;
 import ca.landonjw.gooeylibs2.api.template.types.ChestTemplate;
 import com.cobblemon.mod.common.CobblemonItems;
@@ -18,9 +21,10 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
-public final class PokepastesPreviewGui {
-    private static final int[] TEAM_SLOTS = {10, 11, 12, 14, 15, 16};
+import java.util.ArrayList;
+import java.util.List;
 
+public final class PokepastesPreviewGui {
     private final ServerPlayer player;
     private final ShowdownTeam team;
 
@@ -30,21 +34,32 @@ public final class PokepastesPreviewGui {
     }
 
     public void open() {
-        ChestTemplate.Builder template = ChestTemplate.builder(3);
-        for (int slot = 0; slot < 27; slot++) {
-            template.set(slot / 9, slot % 9, frameButton());
-        }
+        PlaceholderButton placeholder = new PlaceholderButton();
 
-        int count = Math.min(team.team().size(), TEAM_SLOTS.length);
-        for (int index = 0; index < count; index++) {
+        ChestTemplate template = ChestTemplate.builder(3)
+                .row(0, frameButton())
+                .set(1, 0, frameButton())
+                .set(1, 1, placeholder)
+                .set(1, 2, placeholder)
+                .set(1, 3, placeholder)
+                .set(1, 4, frameButton())
+                .set(1, 5, placeholder)
+                .set(1, 6, placeholder)
+                .set(1, 7, placeholder)
+                .set(1, 8, frameButton())
+                .row(2, frameButton())
+                .set(2, 4, importButton())
+                .build();
+
+        List<Button> buttons = new ArrayList<>();
+
+        for (int index = 0; index < team.team().size(); index++) {
             Pokemon pokemon = ShowdownToCobblemonConverter.convert(team.team().get(index));
             ItemStack display = pokemon == null ? invalidPokemonItem(team.team().get(index).species()) : new PokeUtil(pokemon).toItem();
-            int slot = TEAM_SLOTS[index];
-            template.set(slot / 9, slot % 9, GooeyButton.builder().display(display).build());
+            buttons.add(GooeyButton.builder().display(display).build());
         }
-        template.set(2, 4, importButton());
 
-        GooeyPage page = GooeyPage.builder().template(template.build()).build();
+        GooeyPage page = PaginationHelper.createPagesFromPlaceholders(template, buttons, null);
         page.setTitle(Component.literal("Pokepast.es Preview"));
         UIManager.openUIForcefully(player, page);
     }
@@ -58,7 +73,7 @@ public final class PokepastesPreviewGui {
     }
 
     private GooeyButton importButton() {
-        ItemStack display = new ItemBuilder(new ItemStack(Items.LIME_DYE))
+        ItemStack display = new ItemBuilder(new ItemStack(CobblemonItems.POKE_BALL))
                 .hideAdditional()
                 .setCustomName(Component.literal("Import Team").withStyle(ChatFormatting.GREEN))
                 .addLore(new Component[]{
