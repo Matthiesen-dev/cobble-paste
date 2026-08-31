@@ -1,5 +1,8 @@
 package dev.matthiesen.cobble_paste.common.config;
 
+import dev.matthiesen.cobble_paste.common.util.HeldItemMapper;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.item.Item;
 import net.neoforged.neoforge.common.ModConfigSpec;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -31,6 +34,14 @@ public final class CobblePasteConfig {
     }
 
     public static String getItemId(String showdownItemName) {
+        Item item = HeldItemMapper.getItemForShowdownId(showdownItemName);
+        if (item != null) {
+            return BuiltInRegistries.ITEM.getKey(item).toString();
+        }
+        return getConfiguredItemId(showdownItemName);
+    }
+
+    public static String getConfiguredItemId(String showdownItemName) {
         if (showdownItemName == null || showdownItemName.isBlank()) {
             return null;
         }
@@ -56,6 +67,17 @@ public final class CobblePasteConfig {
     }
 
     public static String getShowdownName(String registryId) {
+        Item item = BuiltInRegistries.ITEM.getOptional(net.minecraft.resources.ResourceLocation.tryParse(registryId)).orElse(null);
+        if (item != null) {
+            String showdownId = HeldItemMapper.getShowdownIdForItem(item);
+            if (showdownId != null) {
+                return showdownId;
+            }
+        }
+        return getConfiguredShowdownName(registryId);
+    }
+
+    public static String getConfiguredShowdownName(String registryId) {
         if (registryId == null || registryId.isBlank()) {
             return null;
         }
