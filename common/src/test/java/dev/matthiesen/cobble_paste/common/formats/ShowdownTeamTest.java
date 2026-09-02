@@ -1,14 +1,11 @@
-package dev.matthiesen.cobble_paste.common.parser;
+package dev.matthiesen.cobble_paste.common.formats;
 
 import com.cobblemon.mod.common.api.pokemon.stats.Stats;
-import dev.matthiesen.cobble_paste.common.formats.ShowdownEntry;
-import dev.matthiesen.cobble_paste.common.formats.ShowdownGender;
-import dev.matthiesen.cobble_paste.common.formats.ShowdownTeam;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class PokePasteParserTest {
+class ShowdownTeamTest {
     @Test
     void parsesStandardShowdownPaste() {
         String paste = """
@@ -26,7 +23,7 @@ class PokePasteParserTest {
                 IVs: 0 Atk / 31 Spe
                 """;
 
-        ShowdownTeam team = PokePasteParser.parse(paste, "0123456789abcdef");
+        ShowdownTeam team = ShowdownTeam.fromPokePaste(paste, "0123456789abcdef");
 
         assertEquals("0123456789abcdef", team.pokePasteId());
         assertEquals(2, team.team().size());
