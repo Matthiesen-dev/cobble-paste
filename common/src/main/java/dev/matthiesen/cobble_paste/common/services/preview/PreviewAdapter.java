@@ -1,4 +1,4 @@
-package dev.matthiesen.cobble_paste.common.services;
+package dev.matthiesen.cobble_paste.common.services.preview;
 
 import dev.matthiesen.cobble_paste.common.formats.ShowdownTeam;
 import net.minecraft.server.level.ServerPlayer;

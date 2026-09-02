@@ -10,7 +10,7 @@ import dev.matthiesen.cobble_paste.common.config.CobblePasteConfig;
 import dev.matthiesen.cobble_paste.common.formats.ShowdownEntry;
 import dev.matthiesen.cobble_paste.common.formats.ShowdownTeam;
 import dev.matthiesen.cobble_paste.common.registry.PermissionsRegistry;
-import dev.matthiesen.cobble_paste.common.services.PreviewService;
+import dev.matthiesen.cobble_paste.common.services.preview.PreviewService;
 import dev.matthiesen.cobble_paste.common.services.TeamImportService;
 import com.cobblemon.mod.common.util.PlayerExtensionsKt;
 import dev.matthiesen.matthiesen_core.common.api.command.CoreCommand;
