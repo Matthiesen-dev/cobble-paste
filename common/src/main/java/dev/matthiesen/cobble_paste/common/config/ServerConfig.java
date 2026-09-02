@@ -6,17 +6,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class ServerConfig {
-    public ModConfigSpec.ConfigValue<String> PASTE_AUTHOR;
-    public ModConfigSpec.ConfigValue<List<? extends String>> ITEM_MAPPINGS;
+    public ModConfigSpec.ConfigValue<String> pasteAuthor;
+    public ModConfigSpec.ConfigValue<List<? extends String>> itemMappings;
 
     public ServerConfig(ModConfigSpec.Builder builder) {
-        PASTE_AUTHOR = builder
-                .comment("Author name to display on pokepast.es when exporting.")
-                .define("general.pasteAuthor", "CobblePaste");
+        builder.comment("Server configuration for CobblePaste.").push("general");
 
-        ITEM_MAPPINGS = builder
+        pasteAuthor = builder
+                .comment("Author name to display on pokepast.es when exporting.")
+                .define("pasteAuthor", "CobblePaste");
+
+        itemMappings = builder
                 .comment("Showdown item name to registry id mapping. Use UNMAPPED:prefix to skip unsupported items.")
-                .defineList("item_mappings.entries", defaultItemMappings(), () -> "", value -> value instanceof String);
+                .defineList("itemMappings", defaultItemMappings(), () -> "", value -> value instanceof String);
+
+        builder.pop();
     }
 
     private static List<String> defaultItemMappings() {

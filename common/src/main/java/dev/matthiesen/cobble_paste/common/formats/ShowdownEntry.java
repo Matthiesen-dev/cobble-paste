@@ -7,7 +7,9 @@ import com.cobblemon.mod.common.pokemon.IVs;
 import com.cobblemon.mod.common.pokemon.Pokemon;
 import dev.matthiesen.cobble_paste.common.config.CobblePasteConfig;
 import dev.matthiesen.cobble_paste.common.mappings.SpeciesNameMapper;
+import dev.matthiesen.cobble_paste.common.util.HeldItemMapper;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.item.Item;
 
 import java.util.*;
 
@@ -129,7 +131,7 @@ public record ShowdownEntry(
         Optional<String> item = Optional.empty();
         if (!pokemon.heldItem().isEmpty()) {
             String registryId = BuiltInRegistries.ITEM.getKey(pokemon.heldItem().getItem()).toString();
-            String showdownName = CobblePasteConfig.getShowdownName(registryId);
+            String showdownName = getShowdownName(registryId);
             item = Optional.of(showdownName != null ? showdownName : registryId);
         }
 
@@ -179,6 +181,31 @@ public record ShowdownEntry(
                 moves,
                 Optional.empty()
         );
+    }
+
+    public static String getShowdownName(String registryId) {
+        Item item = BuiltInRegistries.ITEM.getOptional(net.minecraft.resources.ResourceLocation.tryParse(registryId)).orElse(null);
+        if (item != null) {
+            String showdownId = HeldItemMapper.getShowdownIdForItem(item);
+            if (showdownId != null) {
+                return showdownId;
+            }
+        }
+        return getConfiguredShowdownName(registryId);
+    }
+
+    public static String getConfiguredShowdownName(String registryId) {
+        if (registryId == null || registryId.isBlank()) {
+            return null;
+        }
+
+        String normalized = registryId.trim();
+        for (Map.Entry<String, String> entry : CobblePasteConfig.itemMappings().entrySet()) {
+            if (entry.getValue().equalsIgnoreCase(normalized)) {
+                return entry.getKey();
+            }
+        }
+        return null;
     }
 
     public static ShowdownEntry fromPokePasteBlock(String block) {

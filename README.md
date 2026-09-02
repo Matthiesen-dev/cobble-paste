@@ -43,18 +43,16 @@ Controls the exported paste author and item name mappings used during import/exp
 
 ```toml
 [general]
-pasteAuthor = "CobblePaste"
-
-[item_mappings]
-entries = [
-  "Leftovers=cobblemon:leftovers",
-  "Choice Band=cobblemon:choice_band",
-  "Booster Energy=UNMAPPED:booster_energy"
-]
+    pasteAuthor = "CobblePaste"
+    itemMappings = [
+        "Leftovers=cobblemon:leftovers",
+        "Choice Band=cobblemon:choice_band",
+        "Booster Energy=UNMAPPED:booster_energy"
+    ]
 ```
 
 - `general.pasteAuthor`: the author name shown on Pokepast.es when exporting.
-- `item_mappings.entries`: a list of `Showdown Item Name=registry_id` pairs.
+- `general.itemMappings`: a list of `Showdown Item Name=registry_id` pairs.
 - Use `UNMAPPED:<name>` to skip unsupported item mappings instead of hard-failing on import/export.
 
 #### `permissions.toml`
@@ -63,9 +61,9 @@ Controls which permission levels can run each command.
 
 ```toml
 [permissions]
-commandPasteImportPermLevel = "ALL_COMMANDS"
-commandPasteExportPermLevel = "ALL_COMMANDS"
-commandPastePreviewPermLevel = "ALL_COMMANDS"
+    commandPasteImportPermLevel = "ALL_COMMANDS"
+    commandPasteExportPermLevel = "ALL_COMMANDS"
+    commandPastePreviewPermLevel = "ALL_COMMANDS"
 ```
 
 These values are enum-based permission levels from the server permissions system.
