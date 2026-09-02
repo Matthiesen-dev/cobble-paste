@@ -1,7 +1,7 @@
-package dev.matthiesen.cobble_paste.common.services.gooey;
+package dev.matthiesen.cobble_paste.common.services.preview.gooey;
 
 import dev.matthiesen.cobble_paste.common.formats.ShowdownTeam;
-import dev.matthiesen.cobble_paste.common.services.PreviewAdapter;
+import dev.matthiesen.cobble_paste.common.services.preview.PreviewAdapter;
 import net.minecraft.server.level.ServerPlayer;
 
 public final class GooeyPreviewAdapter implements PreviewAdapter {

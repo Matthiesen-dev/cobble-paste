@@ -1,4 +1,4 @@
-package dev.matthiesen.cobble_paste.common.extensions;
+package dev.matthiesen.cobble_paste.common.util;
 
 import com.cobblemon.mod.common.pokemon.Pokemon;
 
@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+@SuppressWarnings("unused")
 public final class PartyCache {
     private final Map<String, List<Pokemon>> cache = new ConcurrentHashMap<>();
 

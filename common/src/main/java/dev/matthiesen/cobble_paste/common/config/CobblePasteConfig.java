@@ -30,7 +30,7 @@ public final class CobblePasteConfig {
     }
 
     public static String getPasteAuthor() {
-        return SERVER_CONFIG.PASTE_AUTHOR.get();
+        return SERVER_CONFIG.pasteAuthor.get();
     }
 
     public static String getItemId(String showdownItemName) {
@@ -66,34 +66,9 @@ public final class CobblePasteConfig {
         return null;
     }
 
-    public static String getShowdownName(String registryId) {
-        Item item = BuiltInRegistries.ITEM.getOptional(net.minecraft.resources.ResourceLocation.tryParse(registryId)).orElse(null);
-        if (item != null) {
-            String showdownId = HeldItemMapper.getShowdownIdForItem(item);
-            if (showdownId != null) {
-                return showdownId;
-            }
-        }
-        return getConfiguredShowdownName(registryId);
-    }
-
-    public static String getConfiguredShowdownName(String registryId) {
-        if (registryId == null || registryId.isBlank()) {
-            return null;
-        }
-
-        String normalized = registryId.trim();
-        for (Map.Entry<String, String> entry : itemMappings().entrySet()) {
-            if (entry.getValue().equalsIgnoreCase(normalized)) {
-                return entry.getKey();
-            }
-        }
-        return null;
-    }
-
     public static Map<String, String> itemMappings() {
         Map<String, String> mappings = new LinkedHashMap<>();
-        for (String entry : SERVER_CONFIG.ITEM_MAPPINGS.get()) {
+        for (String entry : SERVER_CONFIG.itemMappings.get()) {
             int splitIndex = entry.indexOf('=');
             if (splitIndex <= 0 || splitIndex == entry.length() - 1) {
                 continue;
@@ -103,11 +78,5 @@ public final class CobblePasteConfig {
             mappings.put(key, value);
         }
         return mappings;
-    }
-
-    @SuppressWarnings("unused")
-    public static boolean isUnmapped(String showdownItemName) {
-        String itemId = getItemId(showdownItemName);
-        return itemId != null && itemId.startsWith("UNMAPPED:");
     }
 }

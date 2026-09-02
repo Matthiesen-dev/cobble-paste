@@ -2,17 +2,17 @@ package dev.matthiesen.cobble_paste.common.formats;
 
 import com.cobblemon.mod.common.api.pokemon.PokemonProperties;
 import com.cobblemon.mod.common.api.pokemon.stats.Stats;
-import com.cobblemon.mod.common.pokemon.EVs;
-import com.cobblemon.mod.common.pokemon.IVs;
 import com.cobblemon.mod.common.pokemon.Pokemon;
+import com.cobblemon.mod.common.pokemon.PokemonStats;
 import dev.matthiesen.cobble_paste.common.config.CobblePasteConfig;
-import dev.matthiesen.cobble_paste.common.mappings.SpeciesNameMapper;
+import dev.matthiesen.cobble_paste.common.util.HeldItemMapper;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.item.Item;
 
 import java.util.*;
 
 import static dev.matthiesen.cobble_paste.common.api.PokePasteParser.*;
-import static dev.matthiesen.cobble_paste.common.api.PokePasteSerializer.*;
+import static dev.matthiesen.cobble_paste.common.formats.ShowdownStats.*;
 
 public record ShowdownEntry(
         String name,
@@ -32,7 +32,7 @@ public record ShowdownEntry(
 
     public Pokemon toPokemon() {
         StringBuilder propertyBuilder = new StringBuilder();
-        propertyBuilder.append(SpeciesNameMapper.toCobblemon(species));
+        propertyBuilder.append(name_toCobblemon(species));
 
         level.ifPresent(integer -> propertyBuilder.append(" level=").append(integer));
         gender.ifPresent(g -> propertyBuilder.append(" gender=").append(g.name().toLowerCase(Locale.ROOT)));
@@ -61,12 +61,8 @@ public record ShowdownEntry(
         }
 
         for (var stat : Stats.values()) {
-            if (ivs != null && ivs.containsKey(stat)) {
-                propertyBuilder.append(" ").append(getPropertyKey(stat)).append("_iv=").append(ivs.get(stat));
-            }
-            if (evs != null && evs.containsKey(stat)) {
-                propertyBuilder.append(" ").append(getPropertyKey(stat)).append("_ev=").append(evs.get(stat));
-            }
+            serializeStatsToPropertyBuilder(stat, propertyBuilder, ivs, "_iv");
+            serializeStatsToPropertyBuilder(stat, propertyBuilder, evs, "_ev");
         }
 
         return PokemonProperties.Companion.parse(propertyBuilder.toString()).create(null);
@@ -100,10 +96,10 @@ public record ShowdownEntry(
             builder.append("Ability: ").append(ability.get()).append('\n');
         }
         if (evs != null && !evs.isEmpty()) {
-            builder.append("EVs: ").append(renderStatLine(evs)).append('\n');
+            builder.append("EVs: ").append(serializeStats(evs)).append('\n');
         }
         if (ivs != null && !ivs.isEmpty()) {
-            builder.append("IVs: ").append(renderStatLine(ivs)).append('\n');
+            builder.append("IVs: ").append(serializeStats(ivs)).append('\n');
         }
         shiny.ifPresent(aBoolean -> builder.append("Shiny: ").append(aBoolean ? "Yes" : "No").append('\n'));
         happiness.ifPresent(integer -> builder.append("Happiness: ").append(integer).append('\n'));
@@ -123,13 +119,13 @@ public record ShowdownEntry(
             return null;
         }
 
-        String species = SpeciesNameMapper.toShowdown(pokemon.getSpecies().showdownId());
+        String species = name_toShowdown(pokemon.getSpecies().showdownId());
         String name = pokemon.getNickname() != null ? pokemon.getNickname().getString() : species;
         ShowdownGender gender = ShowdownGender.fromGender(pokemon.getGender());
         Optional<String> item = Optional.empty();
         if (!pokemon.heldItem().isEmpty()) {
             String registryId = BuiltInRegistries.ITEM.getKey(pokemon.heldItem().getItem()).toString();
-            String showdownName = CobblePasteConfig.getShowdownName(registryId);
+            String showdownName = getShowdownName(registryId);
             item = Optional.of(showdownName != null ? showdownName : registryId);
         }
 
@@ -139,23 +135,8 @@ public record ShowdownEntry(
         Optional<Boolean> shiny = Optional.of(pokemon.getShiny());
         Optional<String> teraType = Optional.of(pokemon.getTeraType().getName());
 
-        EVs evStats = pokemon.getEvs();
-        Map<Stats, Integer> evs = new EnumMap<>(Stats.class);
-        for (Stats stat : Stats.values()) {
-            Integer value = evStats.get(stat);
-            if (value != null && value > 0) {
-                evs.put(stat, value);
-            }
-        }
-
-        IVs ivStats = pokemon.getIvs();
-        Map<Stats, Integer> ivs = new EnumMap<>(Stats.class);
-        for (Stats stat : Stats.values()) {
-            Integer value = ivStats.get(stat);
-            if (value != null && value > 0) {
-                ivs.put(stat, value);
-            }
-        }
+        Map<Stats, Integer> evs = mapStatsFromPokemon(pokemon.getEvs());
+        Map<Stats, Integer> ivs = mapStatsFromPokemon(pokemon.getIvs());
 
         List<String> moves = new java.util.ArrayList<>();
         for (var move : pokemon.getMoveSet().getMoves()) {
@@ -179,6 +160,48 @@ public record ShowdownEntry(
                 moves,
                 Optional.empty()
         );
+    }
+
+    private static <T extends PokemonStats> Map<Stats, Integer> mapStatsFromPokemon(T stats) {
+        Map<Stats, Integer> result = new EnumMap<>(Stats.class);
+        for (Stats stat : Stats.values()) {
+            Integer value = stats.get(stat);
+            if (value != null && value > 0) {
+                result.put(stat, value);
+            }
+        }
+        return result;
+    }
+
+    private static void serializeStatsToPropertyBuilder(Stats stat, StringBuilder builder, Map<Stats, Integer> stats, String suffix) {
+        if (stats != null && stats.containsKey(stat)) {
+            builder.append(" ").append(formatStatKey(stat)).append(suffix).append("=").append(stats.get(stat));
+        }
+    }
+
+    public static String getShowdownName(String registryId) {
+        Item item = BuiltInRegistries.ITEM.getOptional(net.minecraft.resources.ResourceLocation.tryParse(registryId)).orElse(null);
+        if (item != null) {
+            String showdownId = HeldItemMapper.getShowdownIdForItem(item);
+            if (showdownId != null) {
+                return showdownId;
+            }
+        }
+        return getConfiguredShowdownName(registryId);
+    }
+
+    public static String getConfiguredShowdownName(String registryId) {
+        if (registryId == null || registryId.isBlank()) {
+            return null;
+        }
+
+        String normalized = registryId.trim();
+        for (Map.Entry<String, String> entry : CobblePasteConfig.itemMappings().entrySet()) {
+            if (entry.getValue().equalsIgnoreCase(normalized)) {
+                return entry.getKey();
+            }
+        }
+        return null;
     }
 
     public static ShowdownEntry fromPokePasteBlock(String block) {
@@ -247,8 +270,8 @@ public record ShowdownEntry(
         Optional<String> teraType = Optional.of(firstNonBlank(fields.get("tera type"), fields.get("teratype"), fields.get("tera")));
         Optional<Integer> happiness = parseOptionalInt(fields.get("happiness"));
 
-        Map<Stats, Integer> evs = parseStatsBlock(fields.get("evs"));
-        Map<Stats, Integer> ivs = parseStatsBlock(fields.get("ivs"));
+        Map<Stats, Integer> evs = parseStatsPokePasteBlock(fields.get("evs"));
+        Map<Stats, Integer> ivs = parseStatsPokePasteBlock(fields.get("ivs"));
         List<String> moves = new ArrayList<>();
         for (String line : lines) {
             String trimmed = line.trim();
@@ -277,18 +300,52 @@ public record ShowdownEntry(
         );
     }
 
-    private static String getPropertyKey(Stats stat) {
-        if (stat == null) {
+    private static String name_toCobblemon(String showdownSpecies) {
+        if (showdownSpecies == null || showdownSpecies.isBlank()) {
             return "";
         }
-        return switch (stat) {
-            case HP -> "hp";
-            case ATTACK -> "atk";
-            case DEFENCE -> "def";
-            case SPECIAL_ATTACK -> "spa";
-            case SPECIAL_DEFENCE -> "spd";
-            case SPEED -> "spe";
-            default -> stat.name().toLowerCase(Locale.ROOT);
-        };
+
+        String normalized = showdownSpecies.trim();
+        normalized = normalized.replace("’", "'");
+        normalized = normalized.replace("♂", "m");
+        normalized = normalized.replace("♀", "f");
+        normalized = normalized.replace("Mr. Mime", "Mr Mime");
+        normalized = normalized.replace("Mime Jr.", "Mime Jr");
+        normalized = normalized.replace("Farfetch'd", "Farfetchd");
+        normalized = normalized.replace("Nidoran♂", "Nidoran m");
+        normalized = normalized.replace("Nidoran♀", "Nidoran f");
+        normalized = normalized.replace("Porygon-Z", "Porygon Z");
+        normalized = normalized.replace("Rotom-W", "Rotom W");
+        normalized = normalized.replace("Rotom-F", "Rotom F");
+        normalized = normalized.replace("Rotom-C", "Rotom C");
+        normalized = normalized.replace("Rotom-H", "Rotom H");
+        normalized = normalized.replace("Rotom-S", "Rotom S");
+        normalized = normalized.replace("Mr. Rime", "Mr Rime");
+        normalized = normalized.replace("Sirfetch'd", "Sirfetchd");
+        return normalized;
+    }
+
+    private static String name_toShowdown(String cobblemonSpecies) {
+        if (cobblemonSpecies == null || cobblemonSpecies.isBlank()) {
+            return "";
+        }
+
+        String normalized = cobblemonSpecies.trim();
+        normalized = normalized.replace("_", " ");
+        normalized = normalized.replace("-", " ");
+        normalized = normalized.replace("Mr Mime", "Mr. Mime");
+        normalized = normalized.replace("Mime Jr", "Mime Jr.");
+        normalized = normalized.replace("Farfetchd", "Farfetch'd");
+        normalized = normalized.replace("Sirfetchd", "Sirfetch'd");
+        normalized = normalized.replace("Nidoran m", "Nidoran♂");
+        normalized = normalized.replace("Nidoran f", "Nidoran♀");
+        normalized = normalized.replace("Mr Rime", "Mr. Rime");
+        normalized = normalized.replace("Porygon Z", "Porygon-Z");
+        normalized = normalized.replace("Rotom W", "Rotom-W");
+        normalized = normalized.replace("Rotom F", "Rotom-F");
+        normalized = normalized.replace("Rotom C", "Rotom-C");
+        normalized = normalized.replace("Rotom H", "Rotom-H");
+        normalized = normalized.replace("Rotom S", "Rotom-S");
+        return normalized;
     }
 }

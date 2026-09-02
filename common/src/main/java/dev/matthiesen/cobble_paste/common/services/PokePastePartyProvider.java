@@ -1,4 +1,4 @@
-package dev.matthiesen.cobble_paste.common.extensions;
+package dev.matthiesen.cobble_paste.common.services;
 
 import com.cobblemon.mod.common.api.npc.NPCPartyProvider;
 import com.cobblemon.mod.common.api.storage.party.NPCPartyStore;
@@ -8,6 +8,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import dev.matthiesen.cobble_paste.common.api.PokePasteApiClient;
 import dev.matthiesen.cobble_paste.common.formats.ShowdownTeam;
+import dev.matthiesen.cobble_paste.common.util.PartyCache;
 import kotlin.jvm.functions.Function1;
 import net.minecraft.server.level.ServerPlayer;
 import org.jetbrains.annotations.NotNull;

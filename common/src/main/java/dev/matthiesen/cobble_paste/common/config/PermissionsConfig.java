@@ -10,7 +10,7 @@ public final class PermissionsConfig {
     public ModConfigSpec.EnumValue<PermissionLevel> commandPastePreviewPermLevel;
 
     public PermissionsConfig(ModConfigSpec.Builder builder) {
-        builder.push("permissions");
+        builder.comment("Permissions Configuration for CobblePaste.").push("permissions");
 
         commandPasteImportPermLevel = builder
                 .comment("The permission level required to use the /cobble-paste import command.")

@@ -1,8 +1,8 @@
-package dev.matthiesen.cobble_paste.common.services;
+package dev.matthiesen.cobble_paste.common.services.preview;
 
 import dev.matthiesen.cobble_paste.common.CobblePasteCommon;
 import dev.matthiesen.cobble_paste.common.formats.ShowdownTeam;
-import dev.matthiesen.cobble_paste.common.services.gooey.GooeyPreviewAdapter;
+import dev.matthiesen.cobble_paste.common.services.preview.gooey.GooeyPreviewAdapter;
 import net.minecraft.server.level.ServerPlayer;
 
 public final class PreviewService {
@@ -15,10 +15,10 @@ public final class PreviewService {
     public static void init() {
         if (CobblePasteCommon.INSTANCE.getCommonUtils().isModLoaded(GOOEYLIBS_MOD_ID)) {
             adapter = new GooeyPreviewAdapter();
-            CobblePasteCommon.INSTANCE.createInfoLog("GooeyLibs detected; Pokepast previews are enabled");
+            CobblePasteCommon.INSTANCE.createInfoLog("GooeyLibs detected; Pokepaste previews are enabled");
         } else {
             adapter = new UnavailablePreviewAdapter();
-            CobblePasteCommon.INSTANCE.createInfoLog("GooeyLibs not detected; Pokepast previews are disabled");
+            CobblePasteCommon.INSTANCE.createInfoLog("GooeyLibs not detected; Pokepaste previews are disabled");
         }
     }
 

@@ -1,4 +1,4 @@
-package dev.matthiesen.cobble_paste.common.services.gooey;
+package dev.matthiesen.cobble_paste.common.services.preview.gooey;
 
 import ca.landonjw.gooeylibs2.api.UIManager;
 import ca.landonjw.gooeylibs2.api.button.Button;
