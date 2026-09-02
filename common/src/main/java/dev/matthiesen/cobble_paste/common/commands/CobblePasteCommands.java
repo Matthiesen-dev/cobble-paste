@@ -7,11 +7,9 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import dev.matthiesen.cobble_paste.common.api.PokePasteApiClient;
 import dev.matthiesen.cobble_paste.common.config.CobblePasteConfig;
-import dev.matthiesen.cobble_paste.common.converter.CobblemonToShowdownConverter;
+import dev.matthiesen.cobble_paste.common.formats.ShowdownEntry;
 import dev.matthiesen.cobble_paste.common.formats.ShowdownTeam;
-import dev.matthiesen.cobble_paste.common.parser.PokePasteParser;
 import dev.matthiesen.cobble_paste.common.registry.PermissionsRegistry;
-import dev.matthiesen.cobble_paste.common.serializer.PokePasteSerializer;
 import dev.matthiesen.cobble_paste.common.services.PreviewService;
 import dev.matthiesen.cobble_paste.common.services.TeamImportService;
 import com.cobblemon.mod.common.util.PlayerExtensionsKt;
@@ -66,7 +64,7 @@ public final class CobblePasteCommands implements CoreCommand {
         PokePasteApiClient.fetchRawPaste(rawUrl)
                 .thenAccept(raw -> {
                     try {
-                        ShowdownTeam team = PokePasteParser.parse(raw, pasteId);
+                        ShowdownTeam team = ShowdownTeam.fromPokePaste(raw, pasteId);
                         if (team.team().isEmpty()) {
                             player.sendSystemMessage(Component.literal("No valid Pokémon were found in that paste.").withStyle(ChatFormatting.RED));
                             return;
@@ -97,7 +95,7 @@ public final class CobblePasteCommands implements CoreCommand {
         context.getSource().sendSystemMessage(Component.literal("Fetching Pokepaste preview...").withStyle(ChatFormatting.YELLOW));
 
         PokePasteApiClient.fetchRawPaste(rawUrl)
-                .thenApply(raw -> PokePasteParser.parse(raw, pasteId))
+                .thenApply(raw -> ShowdownTeam.fromPokePaste(raw, pasteId))
                 .thenAccept(team -> player.server.execute(() -> {
                     if (team.team().isEmpty()) {
                         player.sendSystemMessage(Component.literal("No valid Pokémon were found in that paste.").withStyle(ChatFormatting.RED));
@@ -125,7 +123,7 @@ public final class CobblePasteCommands implements CoreCommand {
 
         List<dev.matthiesen.cobble_paste.common.formats.ShowdownEntry> convertedEntries = new ArrayList<>();
         for (int i = 0; i < party.size(); i++) {
-            var converted = CobblemonToShowdownConverter.convert(party.get(i));
+            var converted = ShowdownEntry.fromPokemon(party.get(i));
             if (converted != null) {
                 convertedEntries.add(converted);
             }
@@ -133,7 +131,7 @@ public final class CobblePasteCommands implements CoreCommand {
 
         ShowdownTeam team = new ShowdownTeam("", convertedEntries);
 
-        String serialized = PokePasteSerializer.serialize(team);
+        String serialized = team.serialize();
         String author = CobblePasteConfig.getPasteAuthor();
         PokePasteApiClient.createPaste(serialized, "Cobble Paste export", author)
                 .thenAccept(url -> {

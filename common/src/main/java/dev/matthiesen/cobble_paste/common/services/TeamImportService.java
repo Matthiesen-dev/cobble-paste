@@ -2,7 +2,6 @@ package dev.matthiesen.cobble_paste.common.services;
 
 import com.cobblemon.mod.common.pokemon.Pokemon;
 import com.cobblemon.mod.common.util.PlayerExtensionsKt;
-import dev.matthiesen.cobble_paste.common.converter.ShowdownToCobblemonConverter;
 import dev.matthiesen.cobble_paste.common.formats.ShowdownTeam;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -36,10 +35,7 @@ public final class TeamImportService {
             if (inserted >= 6) {
                 break;
             }
-            Pokemon converted = ShowdownToCobblemonConverter.convert(entry);
-            if (converted == null) {
-                continue;
-            }
+            Pokemon converted = entry.toPokemon();
             party.add(converted);
             inserted++;
         }

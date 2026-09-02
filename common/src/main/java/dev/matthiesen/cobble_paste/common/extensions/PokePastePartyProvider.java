@@ -7,8 +7,7 @@ import com.cobblemon.mod.common.pokemon.Pokemon;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import dev.matthiesen.cobble_paste.common.api.PokePasteApiClient;
-import dev.matthiesen.cobble_paste.common.converter.ShowdownToCobblemonConverter;
-import dev.matthiesen.cobble_paste.common.parser.PokePasteParser;
+import dev.matthiesen.cobble_paste.common.formats.ShowdownTeam;
 import kotlin.jvm.functions.Function1;
 import net.minecraft.server.level.ServerPlayer;
 import org.jetbrains.annotations.NotNull;
@@ -18,12 +17,17 @@ import java.util.List;
 
 public final class PokePastePartyProvider implements NPCPartyProvider {
     public static final String TYPE = "cobble_paste:poke_paste";
+    public static Function1<String, NPCPartyProvider> PROVIDER = (id) -> new PokePastePartyProvider();
+
     private static final PartyCache CACHE = new PartyCache();
+
+    public static void register() {
+        NPCPartyProvider.Companion.getTypes().put(TYPE, PROVIDER);
+    }
 
     private boolean isStatic = true;
     private String pokePasteId = "";
 
-    public static Function1<String, NPCPartyProvider> PROVIDER = (id) -> new PokePastePartyProvider();
 
     @Override
     public @NotNull String getType() {
@@ -83,7 +87,7 @@ public final class PokePastePartyProvider implements NPCPartyProvider {
         }
 
         String rawPaste = PokePasteApiClient.fetchRawPaste(pokePasteId).join();
-        var showdownTeam = PokePasteParser.parse(rawPaste, PokePasteApiClient.extractPasteId(pokePasteId));
+        var showdownTeam = ShowdownTeam.fromPokePaste(rawPaste, PokePasteApiClient.extractPasteId(pokePasteId));
         List<Pokemon> party = new ArrayList<>();
 
         for (var entry : showdownTeam.team()) {
@@ -91,10 +95,7 @@ public final class PokePastePartyProvider implements NPCPartyProvider {
                 break;
             }
 
-            Pokemon pokemon = ShowdownToCobblemonConverter.convert(entry);
-            if (pokemon == null) {
-                continue;
-            }
+            Pokemon pokemon = entry.toPokemon();
             if (entry.level().isEmpty()) {
                 pokemon.setLevel(level);
             }

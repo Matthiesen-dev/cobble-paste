@@ -9,7 +9,6 @@ import ca.landonjw.gooeylibs2.api.page.GooeyPage;
 import ca.landonjw.gooeylibs2.api.template.types.ChestTemplate;
 import com.cobblemon.mod.common.CobblemonItems;
 import com.cobblemon.mod.common.pokemon.Pokemon;
-import dev.matthiesen.cobble_paste.common.converter.ShowdownToCobblemonConverter;
 import dev.matthiesen.cobble_paste.common.formats.ShowdownTeam;
 import dev.matthiesen.cobble_paste.common.registry.PermissionsRegistry;
 import dev.matthiesen.cobble_paste.common.services.TeamImportService;
@@ -50,8 +49,8 @@ public final class PokepastesPreviewGui {
         List<Button> buttons = new ArrayList<>();
 
         for (int index = 0; index < team.team().size(); index++) {
-            Pokemon pokemon = ShowdownToCobblemonConverter.convert(team.team().get(index));
-            ItemStack display = pokemon == null ? invalidPokemonItem(team.team().get(index).species()) : new PokeUtil(pokemon).toItem();
+            Pokemon pokemon = team.team().get(index).toPokemon();
+            ItemStack display = new PokeUtil(pokemon).toItem();
             buttons.add(GooeyButton.builder().display(display).build());
         }
 
@@ -92,13 +91,6 @@ public final class PokepastesPreviewGui {
                         TeamImportService.importIntoParty(player, team);
                     });
                 })
-                .build();
-    }
-
-    private static ItemStack invalidPokemonItem(String species) {
-        return new ItemBuilder(new ItemStack(CobblemonItems.POKE_BALL))
-                .hideAdditional()
-                .setCustomName(Component.literal("Could not preview " + species).withStyle(ChatFormatting.RED))
                 .build();
     }
 }

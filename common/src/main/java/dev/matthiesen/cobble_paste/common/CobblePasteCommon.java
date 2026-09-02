@@ -1,6 +1,5 @@
 package dev.matthiesen.cobble_paste.common;
 
-import com.cobblemon.mod.common.api.npc.NPCPartyProvider;
 import dev.matthiesen.cobble_paste.common.commands.CobblePasteCommands;
 import dev.matthiesen.cobble_paste.common.config.CobblePasteConfig;
 import dev.matthiesen.cobble_paste.common.extensions.PokePastePartyProvider;
@@ -40,7 +39,7 @@ public final class CobblePasteCommon extends AbstractCommonMod {
        PreviewService.init();
        getCommandsRegistryManager().registerCommand(CobblePasteCommands.CMD);
 
-       NPCPartyProvider.Companion.getTypes().put(PokePastePartyProvider.TYPE, PokePastePartyProvider.PROVIDER);
+       PokePastePartyProvider.register();
 
        createInfoLog("Initialized");
     }
