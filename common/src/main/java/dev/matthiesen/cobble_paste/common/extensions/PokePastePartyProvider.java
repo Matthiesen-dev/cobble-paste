@@ -17,12 +17,17 @@ import java.util.List;
 
 public final class PokePastePartyProvider implements NPCPartyProvider {
     public static final String TYPE = "cobble_paste:poke_paste";
+    public static Function1<String, NPCPartyProvider> PROVIDER = (id) -> new PokePastePartyProvider();
+
     private static final PartyCache CACHE = new PartyCache();
+
+    public static void register() {
+        NPCPartyProvider.Companion.getTypes().put(TYPE, PROVIDER);
+    }
 
     private boolean isStatic = true;
     private String pokePasteId = "";
 
-    public static Function1<String, NPCPartyProvider> PROVIDER = (id) -> new PokePastePartyProvider();
 
     @Override
     public @NotNull String getType() {
