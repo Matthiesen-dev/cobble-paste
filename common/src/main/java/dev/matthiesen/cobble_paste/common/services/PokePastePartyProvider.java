@@ -10,6 +10,8 @@ import dev.matthiesen.cobble_paste.common.api.PokePasteApiClient;
 import dev.matthiesen.cobble_paste.common.formats.ShowdownTeam;
 import dev.matthiesen.cobble_paste.common.util.PartyCache;
 import kotlin.jvm.functions.Function1;
+import kotlin.reflect.KFunction;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import org.jetbrains.annotations.NotNull;
 
@@ -17,8 +19,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class PokePastePartyProvider implements NPCPartyProvider {
-    public static final String TYPE = "cobble_paste:poke_paste";
-    public static Function1<String, NPCPartyProvider> PROVIDER = (id) -> new PokePastePartyProvider();
+    public static final ResourceLocation TYPE = ResourceLocation.fromNamespaceAndPath("cobble_paste", "pokepaste");
+    public static final KFunction<NPCPartyProvider> PROVIDER = (id) -> new PokePastePartyProvider();
 
     private static final PartyCache CACHE = new PartyCache();
 
@@ -29,9 +31,8 @@ public final class PokePastePartyProvider implements NPCPartyProvider {
     private boolean isStatic = true;
     private String pokePasteId = "";
 
-
     @Override
-    public @NotNull String getType() {
+    public @NotNull ResourceLocation getType() {
         return TYPE;
     }
 
