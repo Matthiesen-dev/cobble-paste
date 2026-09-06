@@ -21,13 +21,13 @@ import java.util.List;
 
 public final class PokePastePartyProvider implements NPCPartyProvider {
     public static final ResourceLocation TYPE = CobblePasteCommon.modResource("pokepaste");
-//    public static final KFunction<NPCPartyProvider> PROVIDER = (id) -> new PokePastePartyProvider();
+    public static final Function1<String, NPCPartyProvider> PROVIDER = (id) -> new PokePastePartyProvider();
 
     private static final PartyCache CACHE = new PartyCache();
 
+    @SuppressWarnings("unchecked")
     public static void register() {
-        // TODO Figure out how to fix this, the KFunction type is not easy to simply cast to a Function1 type, and the API used to expect a Function1 type.
-//        NPCPartyProvider.Companion.getTypes().put(TYPE, PROVIDER);
+        NPCPartyProvider.Companion.getTypes().put(TYPE, (KFunction<NPCPartyProvider>) PROVIDER);
     }
 
     private boolean isStatic = true;
