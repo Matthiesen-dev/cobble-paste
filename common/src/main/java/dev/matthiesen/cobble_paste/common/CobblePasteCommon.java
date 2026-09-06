@@ -8,6 +8,7 @@ import dev.matthiesen.cobble_paste.common.services.preview.PreviewService;
 import dev.matthiesen.libs.faststats.Token;
 import dev.matthiesen.matthiesen_core.common.AbstractCommonMod;
 import dev.matthiesen.matthiesen_core.common.api.platform.loader.ModConfigType;
+import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 
 public final class CobblePasteCommon extends AbstractCommonMod {
@@ -15,6 +16,10 @@ public final class CobblePasteCommon extends AbstractCommonMod {
     public static final String MOD_NAME = "Cobble Paste";
     public static @Token final String METRICS_TOKEN = "ff82c274e6c0ecf6d9eb2ab55c94b0e8";
     public static final CobblePasteCommon INSTANCE = new CobblePasteCommon();
+
+    public static ResourceLocation modResource(String path) {
+        return ResourceLocation.fromNamespaceAndPath(MOD_ID, path);
+    }
 
     public CobblePasteCommon() {
        super(MOD_ID, MOD_NAME);

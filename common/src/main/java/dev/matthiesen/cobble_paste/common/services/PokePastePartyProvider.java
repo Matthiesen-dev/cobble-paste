@@ -6,6 +6,7 @@ import com.cobblemon.mod.common.entity.npc.NPCEntity;
 import com.cobblemon.mod.common.pokemon.Pokemon;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import dev.matthiesen.cobble_paste.common.CobblePasteCommon;
 import dev.matthiesen.cobble_paste.common.api.PokePasteApiClient;
 import dev.matthiesen.cobble_paste.common.formats.ShowdownTeam;
 import dev.matthiesen.cobble_paste.common.util.PartyCache;
@@ -19,13 +20,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class PokePastePartyProvider implements NPCPartyProvider {
-    public static final ResourceLocation TYPE = ResourceLocation.fromNamespaceAndPath("cobble_paste", "pokepaste");
-    public static final KFunction<NPCPartyProvider> PROVIDER = (id) -> new PokePastePartyProvider();
+    public static final ResourceLocation TYPE = CobblePasteCommon.modResource("pokepaste");
+//    public static final KFunction<NPCPartyProvider> PROVIDER = (id) -> new PokePastePartyProvider();
 
     private static final PartyCache CACHE = new PartyCache();
 
     public static void register() {
-        NPCPartyProvider.Companion.getTypes().put(TYPE, PROVIDER);
+        // TODO Figure out how to fix this, the KFunction type is not easy to simply cast to a Function1 type, and the API used to expect a Function1 type.
+//        NPCPartyProvider.Companion.getTypes().put(TYPE, PROVIDER);
     }
 
     private boolean isStatic = true;
