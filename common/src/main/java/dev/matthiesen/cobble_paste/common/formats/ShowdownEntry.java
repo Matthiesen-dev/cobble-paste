@@ -17,6 +17,7 @@ import static dev.matthiesen.cobble_paste.common.formats.ShowdownStats.*;
 public record ShowdownEntry(
         String name,
         String species,
+        String form,
         Optional<ShowdownGender> gender,
         Optional<String> heldItem,
         Optional<String> ability,
@@ -33,6 +34,9 @@ public record ShowdownEntry(
     public Pokemon toPokemon() {
         StringBuilder propertyBuilder = new StringBuilder();
         propertyBuilder.append(name_toCobblemon(species));
+
+        // TODO: Implement form handling
+        // Cobblemon forms are a bit more complex depending on the species, and type of form. For now, we will just use the species name and ignore the form.
 
         level.ifPresent(integer -> propertyBuilder.append(" level=").append(integer));
         gender.ifPresent(g -> propertyBuilder.append(" gender=").append(g.name().toLowerCase(Locale.ROOT)));
@@ -74,6 +78,10 @@ public record ShowdownEntry(
         String primaryName = name;
         if (primaryName == null || primaryName.isBlank()) {
             primaryName = species;
+        }
+
+        if (!form.isBlank() && !form.equalsIgnoreCase("normal")) {
+            primaryName = primaryName + "-" + form;
         }
 
         if (heldItem.isPresent() && !heldItem.get().isBlank()) {
@@ -120,6 +128,7 @@ public record ShowdownEntry(
         }
 
         String species = name_toShowdown(pokemon.getSpecies().showdownId());
+        String form = pokemon.getForm().getName();
         String name = pokemon.getNickname() != null ? pokemon.getNickname().getString() : species;
         ShowdownGender gender = ShowdownGender.fromGender(pokemon.getGender());
         Optional<String> item = Optional.empty();
@@ -148,6 +157,7 @@ public record ShowdownEntry(
         return new ShowdownEntry(
                 name,
                 species,
+                form,
                 Optional.ofNullable(gender),
                 item,
                 ability,
@@ -253,6 +263,10 @@ public record ShowdownEntry(
             return null;
         }
 
+        SpeciesForm parsedHeader = parseSpeciesAndFormFromHeader(firstNonBlank(header, species));
+        species = parsedHeader.species();
+        String form = parsedHeader.form();
+
         String nickname = firstNonBlank(fields.get("name"), extractNicknameFromHeader(header), species);
         String genderText = firstNonBlank(fields.get("gender"), extractGenderFromHeader(header));
         ShowdownGender gender = ShowdownGender.fromString(genderText);
@@ -286,6 +300,7 @@ public record ShowdownEntry(
         return new ShowdownEntry(
                 nickname,
                 species,
+                form,
                 Optional.ofNullable(gender),
                 Optional.ofNullable(item.isBlank() ? null : item),
                 Optional.ofNullable(ability.isBlank() ? null : ability),
@@ -309,19 +324,19 @@ public record ShowdownEntry(
         normalized = normalized.replace("’", "'");
         normalized = normalized.replace("♂", "m");
         normalized = normalized.replace("♀", "f");
-        normalized = normalized.replace("Mr. Mime", "Mr Mime");
-        normalized = normalized.replace("Mime Jr.", "Mime Jr");
-        normalized = normalized.replace("Farfetch'd", "Farfetchd");
-        normalized = normalized.replace("Nidoran♂", "Nidoran m");
-        normalized = normalized.replace("Nidoran♀", "Nidoran f");
-        normalized = normalized.replace("Porygon-Z", "Porygon Z");
-        normalized = normalized.replace("Rotom-W", "Rotom W");
-        normalized = normalized.replace("Rotom-F", "Rotom F");
-        normalized = normalized.replace("Rotom-C", "Rotom C");
-        normalized = normalized.replace("Rotom-H", "Rotom H");
-        normalized = normalized.replace("Rotom-S", "Rotom S");
-        normalized = normalized.replace("Mr. Rime", "Mr Rime");
-        normalized = normalized.replace("Sirfetch'd", "Sirfetchd");
+        normalized = normalized.replace("Mr. Mime", "mrmime");
+        normalized = normalized.replace("Mime Jr.", "mimejr");
+        normalized = normalized.replace("Farfetch'd", "farfetchd");
+        normalized = normalized.replace("Nidoran♂", "nidoranm");
+        normalized = normalized.replace("Nidoran♀", "nidoranf");
+        normalized = normalized.replace("Porygon-Z", "porygonz");
+        normalized = normalized.replace("Rotom-W", "rotom");
+        normalized = normalized.replace("Rotom-F", "rotom");
+        normalized = normalized.replace("Rotom-C", "rotom");
+        normalized = normalized.replace("Rotom-H", "rotom");
+        normalized = normalized.replace("Rotom-S", "rotom");
+        normalized = normalized.replace("Mr. Rime", "mrrime");
+        normalized = normalized.replace("Sirfetch'd", "sirfetchd");
         return normalized;
     }
 
@@ -333,19 +348,39 @@ public record ShowdownEntry(
         String normalized = cobblemonSpecies.trim();
         normalized = normalized.replace("_", " ");
         normalized = normalized.replace("-", " ");
-        normalized = normalized.replace("Mr Mime", "Mr. Mime");
-        normalized = normalized.replace("Mime Jr", "Mime Jr.");
-        normalized = normalized.replace("Farfetchd", "Farfetch'd");
-        normalized = normalized.replace("Sirfetchd", "Sirfetch'd");
-        normalized = normalized.replace("Nidoran m", "Nidoran♂");
-        normalized = normalized.replace("Nidoran f", "Nidoran♀");
-        normalized = normalized.replace("Mr Rime", "Mr. Rime");
-        normalized = normalized.replace("Porygon Z", "Porygon-Z");
-        normalized = normalized.replace("Rotom W", "Rotom-W");
-        normalized = normalized.replace("Rotom F", "Rotom-F");
-        normalized = normalized.replace("Rotom C", "Rotom-C");
-        normalized = normalized.replace("Rotom H", "Rotom-H");
-        normalized = normalized.replace("Rotom S", "Rotom-S");
+        normalized = normalized.replace("mrmime", "Mr. Mime");
+        normalized = normalized.replace("mimejr", "Mime Jr.");
+        normalized = normalized.replace("farfetchd", "Farfetch'd");
+        normalized = normalized.replace("sirfetchd", "Sirfetch'd");
+        normalized = normalized.replace("nidoranm", "Nidoran♂");
+        normalized = normalized.replace("nidoranf", "Nidoran♀");
+        normalized = normalized.replace("mrrime", "Mr. Rime");
+        normalized = normalized.replace("porygonz", "Porygon-Z");
+        normalized = normalized.replace("rotom", "Rotom");
         return normalized;
     }
+
+    private static SpeciesForm parseSpeciesAndFormFromHeader(String header) {
+        String extracted = firstNonBlank(extractSpeciesFromHeader(header), header);
+        if (extracted.isBlank()) {
+            return new SpeciesForm("", "Normal");
+        }
+
+        String species = extracted.trim();
+        String form = "Normal";
+
+        int firstHyphen = species.indexOf('-');
+        if (firstHyphen > 0 && firstHyphen < species.length() - 1) {
+            String candidateSpecies = species.substring(0, firstHyphen).trim();
+            String candidateForm = species.substring(firstHyphen + 1).trim();
+            if (!candidateForm.isBlank() && !candidateSpecies.isBlank()) {
+                species = candidateSpecies;
+                form = candidateForm;
+            }
+        }
+
+        return new SpeciesForm(species, form);
+    }
+
+    private record SpeciesForm(String species, String form) {}
 }
