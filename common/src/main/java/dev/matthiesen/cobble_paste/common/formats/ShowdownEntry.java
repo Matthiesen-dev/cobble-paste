@@ -30,6 +30,7 @@ public record ShowdownEntry(
         List<String> moves,
         Optional<Integer> happiness
 ) {
+    // src: https://gitlab.com/cable-mc/cobblemon/-/tree/main/common/src/main/resources/data/cobblemon/species_feature_assignments?ref_type=heads
     public static Map<String, List<String>> REGIONAL_FORMS = Map.of(
             "alolan", List.of(
                     "rattata",
