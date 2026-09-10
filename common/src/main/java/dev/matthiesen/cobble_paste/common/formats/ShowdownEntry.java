@@ -30,13 +30,109 @@ public record ShowdownEntry(
         List<String> moves,
         Optional<Integer> happiness
 ) {
+    public static Map<String, List<String>> REGIONAL_FORMS = Map.of(
+            "alolan", List.of(
+                    "rattata",
+                    "raticate",
+                    "raichu",
+                    "sandshrew",
+                    "sandslash",
+                    "vulpix",
+                    "ninetales",
+                    "diglett",
+                    "dugtrio",
+                    "meowth",
+                    "persian",
+                    "geodude",
+                    "graveler",
+                    "golem",
+                    "grimer",
+                    "muk",
+                    "exeggutor",
+                    "marowak"
+            ),
+            "galarian", List.of(
+                    "meowth",
+                    "ponyta",
+                    "rapidash",
+                    "slowpoke",
+                    "slowbro",
+                    "farfetchd",
+                    "weezing",
+                    "mrmime",
+                    "articuno",
+                    "zapdos",
+                    "moltres",
+                    "slowking",
+                    "corsola",
+                    "zigzagoon",
+                    "linoone",
+                    "darumaka",
+                    "darmanitan",
+                    "yamask",
+                    "stunfisk",
+                    "obstagoon",
+                    "perrserker",
+                    "cursola",
+                    "sirfetchd",
+                    "mrrime",
+                    "runerigus"
+            ),
+            "hisuian", List.of(
+                    "growlithe",
+                    "arcanine",
+                    "voltorb",
+                    "electrode",
+                    "typhlosion",
+                    "qwilfish",
+                    "sneasel",
+                    "samurott",
+                    "lilligant",
+                    "zorua",
+                    "zoroark",
+                    "braviary",
+                    "sliggoo",
+                    "goodra",
+                    "avalugg",
+                    "decidueye",
+                    "sneasler",
+                    "overqwil"
+            ),
+            "paldean", List.of(
+                    "tauros",
+                    "wooper",
+                    "clodsire"
+            )
+    );
+
+    public static String getPokemonBuilderFormString(String species, String form) {
+        if (species == null || species.isBlank() || form == null || form.isBlank() || form.equalsIgnoreCase("normal")) {
+            return null;
+        }
+
+        String normalizedSpecies = species.trim().toLowerCase(Locale.ROOT);
+        String normalizedForm = form.trim().toLowerCase(Locale.ROOT);
+
+        for (Map.Entry<String, List<String>> entry : REGIONAL_FORMS.entrySet()) {
+            String region = entry.getKey();
+            List<String> speciesList = entry.getValue();
+            if (normalizedForm.equals(region) && speciesList.contains(normalizedSpecies)) {
+                return region + "=true";
+            }
+        }
+
+        return null;
+    }
 
     public Pokemon toPokemon() {
         StringBuilder propertyBuilder = new StringBuilder();
         propertyBuilder.append(name_toCobblemon(species));
 
-        // TODO: Implement form handling
-        // Cobblemon forms are a bit more complex depending on the species, and type of form. For now, we will just use the species name and ignore the form.
+        // TODO: Extend form handling, this is a simple implementation that only handles regional forms for now
+        String formString = getPokemonBuilderFormString(species, form);
+        if (formString != null) {
+            propertyBuilder.append(" ").append(formString);
+        }
 
         level.ifPresent(integer -> propertyBuilder.append(" level=").append(integer));
         gender.ifPresent(g -> propertyBuilder.append(" gender=").append(g.name().toLowerCase(Locale.ROOT)));
