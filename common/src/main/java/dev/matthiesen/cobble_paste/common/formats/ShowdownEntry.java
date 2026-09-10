@@ -106,7 +106,7 @@ public record ShowdownEntry(
             )
     );
 
-    public static String getPokemonBuilderFormString(String species, String form) {
+    public static String getRegionalFormStringIfAvailable(String species, String form) {
         if (species == null || species.isBlank() || form == null || form.isBlank() || form.equalsIgnoreCase("normal")) {
             return null;
         }
@@ -130,7 +130,7 @@ public record ShowdownEntry(
         propertyBuilder.append(name_toCobblemon(species));
 
         // TODO: Extend form handling, this is a simple implementation that only handles regional forms for now
-        String formString = getPokemonBuilderFormString(species, form);
+        String formString = getRegionalFormStringIfAvailable(species, form);
         if (formString != null) {
             propertyBuilder.append(" ").append(formString);
         }
