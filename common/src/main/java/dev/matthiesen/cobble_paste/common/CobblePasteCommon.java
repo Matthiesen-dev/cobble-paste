@@ -4,7 +4,7 @@ import dev.matthiesen.cobble_paste.common.commands.CobblePasteCommands;
 import dev.matthiesen.cobble_paste.common.config.CobblePasteConfig;
 import dev.matthiesen.cobble_paste.common.registry.PermissionsRegistry;
 import dev.matthiesen.cobble_paste.common.services.preview.PreviewService;
-import dev.matthiesen.cobble_paste.services.PokePastePartyProvider;
+import dev.matthiesen.cobble_paste.common.services.PokePastePartyProvider;
 import dev.matthiesen.libs.faststats.Token;
 import dev.matthiesen.matthiesen_core.common.AbstractCommonMod;
 import dev.matthiesen.matthiesen_core.common.api.platform.loader.ModConfigType;
