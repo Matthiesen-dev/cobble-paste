@@ -1,4 +1,4 @@
-package dev.matthiesen.cobble_paste.services
+package dev.matthiesen.cobble_paste.common.services
 
 import com.cobblemon.mod.common.api.npc.NPCPartyProvider
 import com.cobblemon.mod.common.api.storage.party.NPCPartyStore
