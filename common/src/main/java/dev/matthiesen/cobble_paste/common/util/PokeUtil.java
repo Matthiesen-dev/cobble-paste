@@ -119,7 +119,7 @@ public final class PokeUtil {
         int currentProgress = 0;
         int maxPerLine = 3;
 
-        for (Stats stat : Stats.values()) {
+        for (Stats stat : Stats.getEntries()) {
             if (stat == Stats.ACCURACY || stat == Stats.EVASION) {
                 continue; // Skip Accuracy and Evasion stats
             }

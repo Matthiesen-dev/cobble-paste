@@ -17,10 +17,6 @@ Note: Importing and exporting Pokémon from Pokepast.es is only available for pl
 - [Fabric API](https://modrinth.com/mod/fabric-api) (Fabric only)
 - [Forge Config API Port](https://modrinth.com/mod/forge-config-api-port) (Fabric only)
 
-### Optional Dependencies
-
-- [GooeyLibs](https://modrinth.com/mod/gooeylibs)
-
 ## TODO
 
 - Figure out how to properly handle all species forms including regional forms, mega evolutions, and other special cases.
@@ -34,7 +30,7 @@ Cobble Paste is a server-side mod for importing and exporting Cobblemon teams to
 Use these commands from the server console or in-game as a player with the required permissions:
 
 - `/cobble-paste import <url>`: fetches a Pokepast.es URL and imports the team into the caller's party.
-- `/cobble-paste preview <url>`: opens a read-only inventory preview of the team when GooeyLibs is installed on the server.
+- `/cobble-paste preview <url>`: opens a read-only inventory preview of the team.
 - `/cobble-paste export`: exports the current party to Pokepast.es and returns a shareable link.
 
 ### Configuration
@@ -100,10 +96,11 @@ Documentation for this mod can be found at [mods.matthiesen.dev](https://mods.ma
 
 ## Version Compatibility
 
-| Minecraft Version | Matthiesen Core Version | Cobblemon Version | Mod Version   |
-|-------------------|-------------------------|-------------------|---------------|
-| 1.21.1            | 1.x.x                   | 1.7.3             | 1.0.0-beta.x  |
-| 1.21.1            | 1.2.7+                  | 1.8.0             | 1.0.0-beta.7+ |
+| Minecraft Version | Matthiesen Core Version | Cobblemon Version | Mod Version    |
+|-------------------|-------------------------|-------------------|----------------|
+| 1.21.1            | 1.x.x                   | 1.7.3             | 1.0.0-beta.1+  |
+| 1.21.1            | 1.2.7+                  | 1.8.x+            | 1.0.0-beta.7+  |
+| 1.21.1            | 1.3.0+                  | 1.8.x+            | 1.0.0-beta.12+ |
 
 ## FastStats Metrics
 
