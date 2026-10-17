@@ -161,7 +161,7 @@ public record ShowdownEntry(
             propertyBuilder.append(" moves=").append(String.join(",", moves));
         }
 
-        for (var stat : Stats.values()) {
+        for (var stat : Stats.getEntries()) {
             serializeStatsToPropertyBuilder(stat, propertyBuilder, ivs, "_iv");
             serializeStatsToPropertyBuilder(stat, propertyBuilder, evs, "_ev");
         }
@@ -271,7 +271,7 @@ public record ShowdownEntry(
 
     private static <T extends PokemonStats> Map<Stats, Integer> mapStatsFromPokemon(T stats) {
         Map<Stats, Integer> result = new EnumMap<>(Stats.class);
-        for (Stats stat : Stats.values()) {
+        for (Stats stat : Stats.getEntries()) {
             Integer value = stats.get(stat);
             if (value != null && value > 0) {
                 result.put(stat, value);

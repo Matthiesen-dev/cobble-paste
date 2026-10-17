@@ -1,18 +1,18 @@
-package dev.matthiesen.cobble_paste.common.services.preview.gooey;
+package dev.matthiesen.cobble_paste.common.services.preview.core;
 
-import ca.landonjw.gooeylibs2.api.UIManager;
-import ca.landonjw.gooeylibs2.api.button.Button;
-import ca.landonjw.gooeylibs2.api.button.GooeyButton;
-import ca.landonjw.gooeylibs2.api.button.PlaceholderButton;
-import ca.landonjw.gooeylibs2.api.helpers.PaginationHelper;
-import ca.landonjw.gooeylibs2.api.page.GooeyPage;
-import ca.landonjw.gooeylibs2.api.template.types.ChestTemplate;
 import com.cobblemon.mod.common.CobblemonItems;
 import com.cobblemon.mod.common.pokemon.Pokemon;
 import dev.matthiesen.cobble_paste.common.formats.ShowdownTeam;
 import dev.matthiesen.cobble_paste.common.registry.PermissionsRegistry;
 import dev.matthiesen.cobble_paste.common.services.TeamImportService;
 import dev.matthiesen.cobble_paste.common.util.PokeUtil;
+import dev.matthiesen.matthiesen_core.common.api.server_menu.ServerUIManager;
+import dev.matthiesen.matthiesen_core.common.api.server_menu.button.Button;
+import dev.matthiesen.matthiesen_core.common.api.server_menu.button.PlaceholderButton;
+import dev.matthiesen.matthiesen_core.common.api.server_menu.button.ServerButton;
+import dev.matthiesen.matthiesen_core.common.api.server_menu.helpers.PaginationHelper;
+import dev.matthiesen.matthiesen_core.common.api.server_menu.page.ServerPage;
+import dev.matthiesen.matthiesen_core.common.api.server_menu.template.types.ChestTemplate;
 import dev.matthiesen.matthiesen_core.common.utility.item.ItemBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -51,23 +51,23 @@ public final class PokepastesPreviewGui {
         for (int index = 0; index < team.team().size(); index++) {
             Pokemon pokemon = team.team().get(index).toPokemon();
             ItemStack display = new PokeUtil(pokemon).toItem();
-            buttons.add(GooeyButton.builder().display(display).build());
+            buttons.add(ServerButton.builder().display(display).build());
         }
 
-        GooeyPage page = PaginationHelper.createPagesFromPlaceholders(template, buttons, null);
+        ServerPage page = PaginationHelper.createPagesFromPlaceholders(template, buttons, null);
         page.setTitle(Component.literal("Pokepast.es Preview"));
-        UIManager.openUIForcefully(player, page);
+        ServerUIManager.openUIForcefully(player, page);
     }
 
-    private static GooeyButton frameButton() {
+    private static ServerButton frameButton() {
         ItemStack frame = new ItemBuilder(new ItemStack(Items.GRAY_STAINED_GLASS_PANE))
                 .hideAdditional()
                 .setCustomName(Component.literal(" "))
                 .build();
-        return GooeyButton.builder().display(frame).build();
+        return ServerButton.builder().display(frame).build();
     }
 
-    private GooeyButton importButton() {
+    private ServerButton importButton() {
         ItemStack display = new ItemBuilder(new ItemStack(CobblemonItems.POKE_BALL))
                 .hideAdditional()
                 .setCustomName(Component.literal("Import Team").withStyle(ChatFormatting.GREEN))
@@ -75,10 +75,10 @@ public final class PokepastesPreviewGui {
                         Component.literal("Moves your current party to your PC.").withStyle(ChatFormatting.GRAY)
                 })
                 .build();
-        return GooeyButton.builder()
+        return ServerButton.builder()
                 .display(display)
                 .onClick(() -> {
-                    UIManager.closeUI(player);
+                    ServerUIManager.closeUI(player);
                     player.server.execute(() -> {
                         if (!PermissionsRegistry.checkPermission(
                                 player.createCommandSourceStack(),
